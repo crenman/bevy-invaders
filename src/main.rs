@@ -1,10 +1,7 @@
 use bevy::prelude::*;
 
 fn main() {
-    App::new()
-        .add_plugins(DefaultPlugins)
-        .add_systems(Update, (hello_world, bevy::window::close_on_esc))
-        .run();
+    App::new().add_plugins(DefaultPlugins).run();
 }
 
 #[derive(Component)]
