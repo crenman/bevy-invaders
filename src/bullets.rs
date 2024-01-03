@@ -70,7 +70,7 @@ pub(crate) fn check_bullet_invader_collision(
             if bullet_transform
                 .translation
                 .distance(invader_transform.translation)
-                < 20.0
+                < invaders::INVADER_SIZE
             {
                 commands.entity(bullet).despawn();
                 commands.entity(invader).despawn();

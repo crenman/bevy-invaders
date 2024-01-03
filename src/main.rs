@@ -28,6 +28,7 @@ fn main() {
                 walls::spawn_walls,
                 player::setup,
                 player::spawn_player,
+                invaders::setup,
                 invaders::spawn_invaders,
             ),
         )
@@ -40,6 +41,8 @@ fn main() {
                     bullets::move_bullets,
                     bullets::check_bullet_collider_collision,
                     bullets::check_bullet_invader_collision,
+                    invaders::move_invaders,
+                    invaders::check_invader_wall_collision,
                 )
                     .chain(),
                 bevy::window::close_on_esc,
