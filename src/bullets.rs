@@ -1,6 +1,5 @@
+use crate::{invaders, Bullet, Collider, Invader, Velocity};
 use bevy::prelude::*;
-
-use crate::{Bullet, Collider, Invader, Velocity};
 
 const BULLET_SPRITE_PATH: &str = "bullet.png";
 const PLAYER_BULLET_SPEED: f32 = 500.0;
@@ -22,8 +21,7 @@ pub(crate) fn spawn_player_bullet(
             texture: asset_server.load(BULLET_SPRITE_PATH),
             transform: Transform {
                 translation: bullet_transform.translation,
-                rotation: Quat::IDENTITY,
-                scale: Vec3::ONE,
+                ..default()
             },
             ..default()
         },
@@ -69,13 +67,10 @@ pub(crate) fn check_bullet_invader_collision(
 ) {
     for (bullet, bullet_transform) in bullet_query.iter() {
         for (invader, invader_transform) in invader_query.iter() {
-            if bevy::sprite::collide_aabb::collide(
-                bullet_transform.translation,
-                bullet_transform.scale.truncate(),
-                invader_transform.translation,
-                invader_transform.scale.truncate(),
-            )
-            .is_some()
+            if bullet_transform
+                .translation
+                .distance(invader_transform.translation)
+                < 20.0
             {
                 commands.entity(bullet).despawn();
                 commands.entity(invader).despawn();
