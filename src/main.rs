@@ -1,12 +1,9 @@
-use bevy::{
-    prelude::*,
-    sprite::collide_aabb::{collide, Collision},
-    sprite::MaterialMesh2dBundle,
-};
+use bevy::prelude::*;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
 pub mod bullets;
 pub mod collider;
+pub mod invaders;
 pub mod player;
 pub mod walls;
 
@@ -22,14 +19,25 @@ fn main() {
         .add_plugins(WorldInspectorPlugin::new())
         .add_systems(
             Startup,
-            (spawn_camera, walls::spawn_walls, player::spawn_player),
+            (
+                spawn_camera,
+                walls::spawn_walls,
+                player::setup,
+                player::spawn_player,
+                invaders::spawn_invaders,
+            ),
         )
         .add_systems(
             Update,
             (
-                player::move_player,
-                player::shoot,
-                bullets::move_bullets,
+                (
+                    player::move_player,
+                    player::shoot,
+                    bullets::move_bullets,
+                    bullets::check_bullet_collider_collision,
+                    bullets::check_bullet_invader_collision,
+                )
+                    .chain(),
                 bevy::window::close_on_esc,
             ),
         )
@@ -47,9 +55,6 @@ struct Collider;
 
 #[derive(Component)]
 struct Bullet;
-
-#[derive(Component)]
-struct Position(Vec3);
 
 #[derive(Component)]
 struct Velocity(Vec3);

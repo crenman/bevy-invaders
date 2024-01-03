@@ -1,8 +1,22 @@
+use std::time::Duration;
+
 use bevy::prelude::*;
 
 use crate::{bullets, walls, Player, PLAYER_SPEED, PLAYER_WIDTH, PLAYER_Y};
 
 const PLAYER_SPRITE_PATH: &str = "player.png";
+const FIRE_RATE: f32 = 0.2;
+
+#[derive(Resource, Debug)]
+pub(crate) struct PlayerShootConfig {
+    timer: Timer,
+}
+
+pub(crate) fn setup(mut commands: Commands) {
+    commands.insert_resource(PlayerShootConfig {
+        timer: Timer::new(Duration::from_secs_f32(FIRE_RATE), TimerMode::Once),
+    });
+}
 
 pub(crate) fn spawn_player(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn((
@@ -27,11 +41,11 @@ pub(crate) fn move_player(
     let mut player_transform = query.single_mut();
     let mut direction = 0.0;
 
-    if keyboard_input.pressed(KeyCode::Left) {
+    if keyboard_input.pressed(KeyCode::Left) || keyboard_input.pressed(KeyCode::A) {
         direction -= 1.0;
     }
 
-    if keyboard_input.pressed(KeyCode::Right) {
+    if keyboard_input.pressed(KeyCode::Right) || keyboard_input.pressed(KeyCode::D) {
         direction += 1.0;
     }
 
@@ -51,10 +65,20 @@ pub(crate) fn shoot(
     asset_server: Res<AssetServer>,
     keyboard_input: Res<Input<KeyCode>>,
     player_query: Query<&Transform, With<Player>>,
+    mut shoot_config: ResMut<PlayerShootConfig>,
+    time: Res<Time>,
 ) {
-    let player_transform = player_query.single();
+    shoot_config.timer.tick(time.delta());
+
+    if !shoot_config.timer.finished() {
+        return;
+    }
 
     if keyboard_input.pressed(KeyCode::Space) {
+        shoot_config.timer.reset();
+
+        let player_transform = player_query.single();
+
         let mut bullet_transform = *player_transform;
         bullet_transform.translation.y += 10.0;
 
