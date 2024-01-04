@@ -1,20 +1,47 @@
 use std::time::Duration;
 
 use bevy::prelude::*;
+use rand::prelude::*;
 
-use crate::{walls, Collider, Invader};
+use crate::{
+    bullets, on_invaders_hit_player, walls, Collider, Invader, InvaderBulletFiredEvent,
+    InvaderDifficulty, INVADER_SIZE, PLAYER_Y,
+};
 
-const INVADER_SPRITE_PATH: &str = "green.png";
 const MOVEMENT_RATE: f32 = 0.1;
 const MOVEMENT: f32 = 5.0;
-pub(crate) const INVADER_SIZE: f32 = 20.0;
 const INVADER_WALL_PADDING: f32 = 20.0;
+const MOVE_DOWN_AMOUNT: f32 = 15.0;
+const PLAYER_COLLISION_Y: f32 = PLAYER_Y + 20.0;
+
+impl Invader {
+    fn get_sprite_path(&self) -> String {
+        String::from(match self.difficulty {
+            InvaderDifficulty::Easy => "green.png",
+            InvaderDifficulty::Medium => "yellow.png",
+            InvaderDifficulty::Hard => "red.png",
+        })
+    }
+}
+
+impl InvaderDifficulty {
+    fn from_i32(value: i32) -> Self {
+        match value {
+            0 => InvaderDifficulty::Easy,
+            1 => InvaderDifficulty::Medium,
+            2 => InvaderDifficulty::Hard,
+            3 => InvaderDifficulty::Medium,
+            _ => InvaderDifficulty::Easy,
+        }
+    }
+}
 
 #[derive(Resource)]
 pub(crate) struct InvaderConfig {
     movement_timer: Timer,
     direction: f32,
     wall_collision_timer: Timer,
+    move_down: bool,
 }
 
 pub(crate) fn setup(mut commands: Commands) {
@@ -22,6 +49,7 @@ pub(crate) fn setup(mut commands: Commands) {
         movement_timer: Timer::new(Duration::from_secs_f32(MOVEMENT_RATE), TimerMode::Repeating),
         wall_collision_timer: Timer::new(Duration::from_secs_f32(1.0), TimerMode::Once),
         direction: 1.0,
+        move_down: false,
     });
 }
 
@@ -39,24 +67,28 @@ pub(crate) fn spawn_invaders(mut commands: Commands, asset_server: Res<AssetServ
 
     let mut invader_position = starting_position;
 
-    for _row in 0..n_rows {
-        for _column in 0..n_cols {
+    (0..n_rows).for_each(|row| {
+        (0..n_cols).for_each(|_column| {
+            let invader: Invader = Invader {
+                difficulty: InvaderDifficulty::from_i32(row),
+            };
+            let invader_sprite_path = invader.get_sprite_path();
             commands.spawn((
+                invader,
                 SpriteBundle {
-                    texture: asset_server.load(INVADER_SPRITE_PATH),
+                    texture: asset_server.load(invader_sprite_path),
                     transform: Transform {
                         translation: invader_position,
                         ..default()
                     },
                     ..default()
                 },
-                Invader,
             ));
             invader_position.x += horizontal_spacing;
-        }
+        });
         invader_position.x = starting_x;
         invader_position.y -= vertical_spacing;
-    }
+    });
 }
 
 pub(crate) fn move_invaders(
@@ -70,9 +102,9 @@ pub(crate) fn move_invaders(
         return;
     }
 
-    for mut invader_transform in invader_query.iter_mut() {
+    invader_query.iter_mut().for_each(|mut invader_transform| {
         invader_transform.translation.x += MOVEMENT * invader_config.direction;
-    }
+    });
 }
 
 pub(crate) fn check_invader_wall_collision(
@@ -93,21 +125,55 @@ pub(crate) fn check_invader_wall_collision(
                 invader_transform.translation,
                 Vec2::splat(INVADER_SIZE + INVADER_WALL_PADDING),
                 collider_transform.translation,
-                collider_transform.scale.truncate(),
+                collider_transform.scale.truncate() + walls::WALL_THICKNESS,
             )
             .is_some()
             {
                 invader_config.direction *= -1.0;
                 invader_config.wall_collision_timer.reset();
-                dbg!("Collision!");
-
-                // send event
-
-                // for mut invader_transform in invader_query.iter_mut() {
-                //     invader_transform.translation.y -= 10.0;
-                // }
+                invader_config.move_down = true;
                 return;
             }
         }
+    }
+}
+
+pub(crate) fn maybe_move_invaders_down(
+    mut invader_query: Query<&mut Transform, With<Invader>>,
+    mut invader_config: ResMut<InvaderConfig>,
+) {
+    if !invader_config.move_down {
+        return;
+    }
+
+    invader_config.move_down = false;
+
+    invader_query.iter_mut().for_each(|mut invader_transform| {
+        invader_transform.translation.y -= MOVE_DOWN_AMOUNT;
+    });
+}
+
+pub(crate) fn check_invaders_reached_bottom(invader_query: Query<&Transform, With<Invader>>) {
+    for invader_transform in invader_query.iter() {
+        if invader_transform.translation.y <= PLAYER_COLLISION_Y {
+            on_invaders_hit_player();
+            return;
+        }
+    }
+}
+
+pub(crate) fn maybe_shoot(
+    invader_query: Query<&Transform, With<Invader>>,
+    mut invader_bullet_fired_event: EventWriter<InvaderBulletFiredEvent>,
+) {
+    for invader_transform in invader_query.iter() {
+        let rng = rand::thread_rng().gen::<f32>();
+        if rng < 0.999 {
+            continue;
+        }
+
+        invader_bullet_fired_event.send(InvaderBulletFiredEvent(
+            invader_transform.translation + Vec3::new(0.0, -10.0, 0.0),
+        ));
     }
 }

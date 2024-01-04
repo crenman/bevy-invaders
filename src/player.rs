@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use bevy::prelude::*;
 
-use crate::{bullets, walls, Player, PLAYER_SPEED, PLAYER_WIDTH, PLAYER_Y};
+use crate::{bullets, walls, Player, PlayerBulletFiredEvent, PLAYER_SPEED, PLAYER_WIDTH, PLAYER_Y};
 
 const PLAYER_SPRITE_PATH: &str = "player.png";
 const FIRE_RATE: f32 = 0.2;
@@ -49,11 +49,9 @@ pub(crate) fn move_player(
         direction += 1.0;
     }
 
-    // Calculate the new horizontal paddle position based on player input
     let new_player_position =
         player_transform.translation.x + direction * PLAYER_SPEED * time.delta_seconds();
 
-    // Update the paddle position, making sure it doesn't cause the paddle to leave the arena
     let left_bound = walls::LEFT_WALL + walls::WALL_THICKNESS / 2.0 + (PLAYER_WIDTH / 2.0);
     let right_bound = walls::RIGHT_WALL - walls::WALL_THICKNESS / 2.0 - (PLAYER_WIDTH / 2.0);
 
@@ -61,12 +59,11 @@ pub(crate) fn move_player(
 }
 
 pub(crate) fn shoot(
-    commands: Commands,
-    asset_server: Res<AssetServer>,
     keyboard_input: Res<Input<KeyCode>>,
     player_query: Query<&Transform, With<Player>>,
     mut shoot_config: ResMut<PlayerShootConfig>,
     time: Res<Time>,
+    mut player_bullet_fired_event: EventWriter<PlayerBulletFiredEvent>,
 ) {
     shoot_config.timer.tick(time.delta());
 
@@ -79,9 +76,8 @@ pub(crate) fn shoot(
 
         let player_transform = player_query.single();
 
-        let mut bullet_transform = *player_transform;
-        bullet_transform.translation.y += 10.0;
-
-        bullets::spawn_player_bullet(commands, asset_server, &bullet_transform);
+        player_bullet_fired_event.send(PlayerBulletFiredEvent(
+            player_transform.translation + Vec3::new(0.0, 10.0, 0.0),
+        ));
     }
 }
