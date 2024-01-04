@@ -14,16 +14,6 @@ const INVADER_WALL_PADDING: f32 = 20.0;
 const MOVE_DOWN_AMOUNT: f32 = 15.0;
 const PLAYER_COLLISION_Y: f32 = PLAYER_Y + 20.0;
 
-impl Invader {
-    fn get_sprite_path(&self) -> String {
-        String::from(match self.difficulty {
-            InvaderDifficulty::Easy => "green.png",
-            InvaderDifficulty::Medium => "yellow.png",
-            InvaderDifficulty::Hard => "red.png",
-        })
-    }
-}
-
 impl InvaderDifficulty {
     fn from_i32(value: i32) -> Self {
         match value {
@@ -32,6 +22,30 @@ impl InvaderDifficulty {
             2 => InvaderDifficulty::Hard,
             3 => InvaderDifficulty::Medium,
             _ => InvaderDifficulty::Easy,
+        }
+    }
+
+    fn get_sprite_path(&self) -> String {
+        String::from(match self {
+            InvaderDifficulty::Easy => "green.png",
+            InvaderDifficulty::Medium => "yellow.png",
+            InvaderDifficulty::Hard => "red.png",
+        })
+    }
+
+    pub(crate) fn get_bullet_sprite_path(&self) -> String {
+        String::from(match self {
+            InvaderDifficulty::Easy => "green-bullet.png",
+            InvaderDifficulty::Medium => "yellow-bullet.png",
+            InvaderDifficulty::Hard => "red-bullet.png",
+        })
+    }
+
+    pub(crate) fn get_bullet_speed(&self) -> f32 {
+        match self {
+            InvaderDifficulty::Easy => 200.0,
+            InvaderDifficulty::Medium => 350.0,
+            InvaderDifficulty::Hard => 500.0,
         }
     }
 }
@@ -72,7 +86,7 @@ pub(crate) fn spawn_invaders(mut commands: Commands, asset_server: Res<AssetServ
             let invader: Invader = Invader {
                 difficulty: InvaderDifficulty::from_i32(row),
             };
-            let invader_sprite_path = invader.get_sprite_path();
+            let invader_sprite_path = invader.difficulty.get_sprite_path();
             commands.spawn((
                 invader,
                 SpriteBundle {
@@ -163,17 +177,18 @@ pub(crate) fn check_invaders_reached_bottom(invader_query: Query<&Transform, Wit
 }
 
 pub(crate) fn maybe_shoot(
-    invader_query: Query<&Transform, With<Invader>>,
+    invader_query: Query<(&Invader, &Transform), With<Invader>>,
     mut invader_bullet_fired_event: EventWriter<InvaderBulletFiredEvent>,
 ) {
-    for invader_transform in invader_query.iter() {
+    for (invader, invader_transform) in invader_query.iter() {
         let rng = rand::thread_rng().gen::<f32>();
         if rng < 0.999 {
             continue;
         }
 
-        invader_bullet_fired_event.send(InvaderBulletFiredEvent(
-            invader_transform.translation + Vec3::new(0.0, -10.0, 0.0),
-        ));
+        invader_bullet_fired_event.send(InvaderBulletFiredEvent {
+            position: invader_transform.translation + Vec3::new(0.0, -10.0, 0.0),
+            invader_difficulty: invader.difficulty.clone(),
+        });
     }
 }

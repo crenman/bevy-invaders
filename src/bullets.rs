@@ -1,11 +1,11 @@
 use crate::{
     invaders, on_invader_bullet_hit_player, Collider, CommonBullet, Invader, InvaderBullet,
-    InvaderBulletFiredEvent, Player, PlayerBullet, PlayerBulletFiredEvent, Velocity, INVADER_SIZE,
-    PLAYER_HEIGHT,
+    InvaderBulletFiredEvent, InvaderDifficulty, Player, PlayerBullet, PlayerBulletFiredEvent,
+    Velocity, INVADER_SIZE, PLAYER_HEIGHT,
 };
 use bevy::prelude::*;
 
-const BULLET_SPRITE_PATH: &str = "bullet.png";
+const BULLET_SPRITE_PATH: &str = "player-bullet.png";
 const PLAYER_BULLET_SPEED: f32 = 500.0;
 const INVADER_BULLET_SPEED: f32 = 200.0;
 
@@ -55,16 +55,20 @@ pub(crate) fn spawn_invader_bullet(
     for event in invader_bullet_fired_event.read() {
         commands.spawn(InvaderBulletBundle {
             sprite_bundle: SpriteBundle {
-                texture: asset_server.load(BULLET_SPRITE_PATH),
+                texture: asset_server.load(event.invader_difficulty.get_bullet_sprite_path()),
                 transform: Transform {
-                    translation: event.0,
+                    translation: event.position,
                     ..default()
                 },
                 ..default()
             },
             bullet: InvaderBullet,
             common_bullet: CommonBullet,
-            velocity: Velocity(Vec3::new(0.0, -INVADER_BULLET_SPEED, 0.0)),
+            velocity: Velocity(Vec3::new(
+                0.0,
+                -event.invader_difficulty.get_bullet_speed(),
+                0.0,
+            )),
         });
     }
 }

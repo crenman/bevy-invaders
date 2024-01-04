@@ -67,6 +67,7 @@ fn main() {
 #[derive(Component)]
 struct Player;
 
+#[derive(Clone)]
 enum InvaderDifficulty {
     Easy,
     Medium,
@@ -94,7 +95,10 @@ struct PlayerBulletFiredEvent(Vec3);
 struct InvaderBullet;
 
 #[derive(Event)]
-struct InvaderBulletFiredEvent(Vec3);
+struct InvaderBulletFiredEvent {
+    position: Vec3,
+    invader_difficulty: InvaderDifficulty,
+}
 
 #[derive(Component)]
 struct Velocity(Vec3);
