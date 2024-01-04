@@ -1,7 +1,7 @@
 use crate::{
-    on_invader_bullet_hit_player, player::shoot, Collider, CommonBullet, Invader, InvaderBullet,
-    InvaderBulletFiredEvent, Player, PlayerBullet, PlayerBulletFiredEvent, ShootSound, Velocity,
-    INVADER_SIZE, PLAYER_HEIGHT,
+    Collider, CommonBullet, Invader, InvaderBullet, InvaderBulletFiredEvent,
+    InvaderBulletHitPlayerEvent, Player, PlayerBullet, PlayerBulletFiredEvent, ShootSound,
+    Velocity, INVADER_SIZE, PLAYER_HEIGHT,
 };
 use bevy::prelude::*;
 use rand::Rng;
@@ -146,6 +146,7 @@ pub(crate) fn check_invader_bullet_player_collision(
     mut commands: Commands,
     bullet_query: Query<(Entity, &Transform), With<InvaderBullet>>,
     player_query: Query<&Transform, With<Player>>,
+    mut invader_hit_player_event: EventWriter<InvaderBulletHitPlayerEvent>,
 ) {
     let player_transform = player_query.single();
 
@@ -156,7 +157,7 @@ pub(crate) fn check_invader_bullet_player_collision(
             < PLAYER_HEIGHT
         {
             commands.entity(bullet).despawn();
-            on_invader_bullet_hit_player();
+            invader_hit_player_event.send(InvaderBulletHitPlayerEvent);
             return;
         }
     }

@@ -1,10 +1,9 @@
-use std::process::exit;
-
 use bevy::prelude::*;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
 pub mod bullets;
 pub mod collider;
+pub mod gamestate;
 pub mod invaders;
 pub mod player;
 pub mod walls;
@@ -24,6 +23,9 @@ fn main() {
         .add_state::<GameState>()
         .add_event::<InvaderBulletFiredEvent>()
         .add_event::<PlayerBulletFiredEvent>()
+        .add_event::<InvadersReachedBottomEvent>()
+        .add_event::<InvaderBulletHitPlayerEvent>()
+        .add_event::<PlayerKilledAllInvadersEvent>()
         .add_systems(
             Startup,
             (
@@ -54,6 +56,10 @@ fn main() {
                     bullets::check_player_bullet_invader_collision,
                     bullets::check_invader_bullet_player_collision,
                     bullets::player_bullet_sound,
+                    gamestate::check_player_killed_all_invaders,
+                    gamestate::invader_bullet_hit_player,
+                    gamestate::invaders_hit_player,
+                    gamestate::player_killed_all_invaders,
                 )
                     .chain(),
                 bevy::window::close_on_esc,
@@ -98,6 +104,15 @@ struct InvaderBulletFiredEvent {
     invader_difficulty: InvaderDifficulty,
 }
 
+#[derive(Event)]
+struct InvadersReachedBottomEvent;
+
+#[derive(Event)]
+struct InvaderBulletHitPlayerEvent;
+
+#[derive(Event)]
+struct PlayerKilledAllInvadersEvent;
+
 #[derive(Component)]
 struct Velocity(Vec3);
 
@@ -126,12 +141,4 @@ fn setup_sound(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     let shoot_sound: Handle<AudioSource> = asset_server.load("laser.wav");
     commands.insert_resource(ShootSound(shoot_sound));
-}
-
-fn on_invaders_hit_player() {
-    exit(0);
-}
-
-fn on_invader_bullet_hit_player() {
-    exit(0);
 }

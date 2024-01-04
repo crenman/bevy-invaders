@@ -4,8 +4,8 @@ use bevy::prelude::*;
 use rand::prelude::*;
 
 use crate::{
-    on_invaders_hit_player, walls, Collider, Invader, InvaderBulletFiredEvent, InvaderDifficulty,
-    INVADER_SIZE, PLAYER_Y,
+    walls, Collider, Invader, InvaderBulletFiredEvent, InvaderDifficulty,
+    InvadersReachedBottomEvent, INVADER_SIZE, PLAYER_Y,
 };
 
 const MOVEMENT_RATE: f32 = 0.1;
@@ -167,10 +167,13 @@ pub(crate) fn maybe_move_invaders_down(
     });
 }
 
-pub(crate) fn check_invaders_reached_bottom(invader_query: Query<&Transform, With<Invader>>) {
+pub(crate) fn check_invaders_reached_bottom(
+    invader_query: Query<&Transform, With<Invader>>,
+    mut invaders_reached_bottom_event: EventWriter<InvadersReachedBottomEvent>,
+) {
     for invader_transform in invader_query.iter() {
         if invader_transform.translation.y <= PLAYER_COLLISION_Y {
-            on_invaders_hit_player();
+            invaders_reached_bottom_event.send(InvadersReachedBottomEvent);
             return;
         }
     }
