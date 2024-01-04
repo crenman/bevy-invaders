@@ -19,7 +19,7 @@ const PLAYER_Y: f32 = walls::BOTTOM_WALL + GAP_BETWEEN_PLAYER_AND_FLOOR;
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_plugins(WorldInspectorPlugin::new())
+        // .add_plugins(WorldInspectorPlugin::new())
         .add_state::<GameState>()
         .add_event::<InvaderBulletFiredEvent>()
         .add_event::<PlayerBulletFiredEvent>()
