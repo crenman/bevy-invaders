@@ -6,6 +6,7 @@ pub mod collider;
 pub mod gamestate;
 pub mod invaders;
 pub mod player;
+pub mod shields;
 pub mod walls;
 
 const PLAYER_SPEED: f32 = 500.0;
@@ -36,6 +37,7 @@ fn main() {
                 player::spawn_player,
                 invaders::setup,
                 invaders::spawn_invaders,
+                shields::spawn_shields,
             ),
         )
         .add_systems(
@@ -56,6 +58,7 @@ fn main() {
                     bullets::check_player_bullet_invader_collision,
                     bullets::check_invader_bullet_player_collision,
                     bullets::player_bullet_sound,
+                    shields::check_bullet_shield_collision,
                     gamestate::check_player_killed_all_invaders,
                     gamestate::invader_bullet_hit_player,
                     gamestate::invaders_hit_player,
@@ -82,6 +85,9 @@ enum InvaderDifficulty {
 struct Invader {
     difficulty: InvaderDifficulty,
 }
+
+#[derive(Component)]
+struct Shield(i32);
 
 #[derive(Component)]
 struct Collider;
