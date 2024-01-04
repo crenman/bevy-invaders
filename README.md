@@ -1,6 +1,8 @@
 # bevy-invaders
 Using my dev days to explore the Bevy Engine https://bevyengine.org/, https://bevyengine.org/learn/book/getting-started/
 
+![screenshot](screenshot.png "Screenshot")
+
 
 ## Resources
 

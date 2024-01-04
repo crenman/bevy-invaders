@@ -2,7 +2,6 @@ use bevy::prelude::*;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
 pub mod bullets;
-pub mod collider;
 pub mod gamestate;
 pub mod invaders;
 pub mod player;
