@@ -1,10 +1,6 @@
 use std::process::exit;
 
-use bevy::{
-    prelude::*,
-    sprite::collide_aabb::{collide, Collision},
-    sprite::MaterialMesh2dBundle,
-};
+use bevy::prelude::*;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
 pub mod bullets;
@@ -32,6 +28,7 @@ fn main() {
             Startup,
             (
                 spawn_camera,
+                setup_sound,
                 walls::spawn_walls,
                 player::setup,
                 player::spawn_player,
@@ -56,6 +53,7 @@ fn main() {
                     bullets::check_bullet_wall_collision,
                     bullets::check_player_bullet_invader_collision,
                     bullets::check_invader_bullet_player_collision,
+                    bullets::player_bullet_sound,
                 )
                     .chain(),
                 bevy::window::close_on_esc,
@@ -103,6 +101,9 @@ struct InvaderBulletFiredEvent {
 #[derive(Component)]
 struct Velocity(Vec3);
 
+#[derive(Resource)]
+struct ShootSound(Handle<AudioSource>);
+
 #[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
 enum GameState {
     #[default]
@@ -113,6 +114,18 @@ enum GameState {
 
 fn spawn_camera(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
+}
+
+fn setup_sound(mut commands: Commands, asset_server: Res<AssetServer>) {
+    let ambience: Handle<AudioSource> = asset_server.load("space-invaders-drum.wav");
+
+    commands.spawn(AudioBundle {
+        source: ambience,
+        settings: PlaybackSettings::LOOP,
+    });
+
+    let shoot_sound: Handle<AudioSource> = asset_server.load("laser.wav");
+    commands.insert_resource(ShootSound(shoot_sound));
 }
 
 fn on_invaders_hit_player() {

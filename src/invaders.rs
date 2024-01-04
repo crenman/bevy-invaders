@@ -4,8 +4,8 @@ use bevy::prelude::*;
 use rand::prelude::*;
 
 use crate::{
-    bullets, on_invaders_hit_player, walls, Collider, Invader, InvaderBulletFiredEvent,
-    InvaderDifficulty, INVADER_SIZE, PLAYER_Y,
+    on_invaders_hit_player, walls, Collider, Invader, InvaderBulletFiredEvent, InvaderDifficulty,
+    INVADER_SIZE, PLAYER_Y,
 };
 
 const MOVEMENT_RATE: f32 = 0.1;

@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use bevy::prelude::*;
 
-use crate::{bullets, walls, Player, PlayerBulletFiredEvent, PLAYER_SPEED, PLAYER_WIDTH, PLAYER_Y};
+use crate::{walls, Player, PlayerBulletFiredEvent, PLAYER_SPEED, PLAYER_WIDTH, PLAYER_Y};
 
 const PLAYER_SPRITE_PATH: &str = "player.png";
 const FIRE_RATE: f32 = 0.2;

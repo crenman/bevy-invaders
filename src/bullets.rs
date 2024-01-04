@@ -1,13 +1,13 @@
 use crate::{
-    invaders, on_invader_bullet_hit_player, Collider, CommonBullet, Invader, InvaderBullet,
-    InvaderBulletFiredEvent, InvaderDifficulty, Player, PlayerBullet, PlayerBulletFiredEvent,
-    Velocity, INVADER_SIZE, PLAYER_HEIGHT,
+    on_invader_bullet_hit_player, player::shoot, Collider, CommonBullet, Invader, InvaderBullet,
+    InvaderBulletFiredEvent, Player, PlayerBullet, PlayerBulletFiredEvent, ShootSound, Velocity,
+    INVADER_SIZE, PLAYER_HEIGHT,
 };
 use bevy::prelude::*;
+use rand::Rng;
 
 const BULLET_SPRITE_PATH: &str = "player-bullet.png";
 const PLAYER_BULLET_SPEED: f32 = 500.0;
-const INVADER_BULLET_SPEED: f32 = 200.0;
 
 #[derive(Bundle)]
 pub(crate) struct PlayerBulletBundle {
@@ -69,6 +69,26 @@ pub(crate) fn spawn_invader_bullet(
                 -event.invader_difficulty.get_bullet_speed(),
                 0.0,
             )),
+        });
+    }
+}
+
+pub(crate) fn player_bullet_sound(
+    mut commands: Commands,
+    shoot_sound: Res<ShootSound>,
+    mut player_bullet_fired_event: EventReader<PlayerBulletFiredEvent>,
+) {
+    for _event in player_bullet_fired_event.read() {
+        commands.spawn(AudioBundle {
+            source: shoot_sound.0.clone(),
+            settings: PlaybackSettings {
+                mode: bevy::audio::PlaybackMode::Despawn,
+                speed: 2.0,
+                volume: bevy::audio::Volume::new_relative(
+                    0.1 + rand::thread_rng().gen_range(0.1..0.3),
+                ),
+                ..default()
+            },
         });
     }
 }
