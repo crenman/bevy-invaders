@@ -10,6 +10,7 @@ use crate::{
 
 const MOVEMENT_RATE: f32 = 0.1;
 const MOVEMENT: f32 = 5.0;
+const MOVEMENT_TIMER_INCREASE_FACTOR: f32 = 0.8;
 const INVADER_WALL_PADDING: f32 = 20.0;
 const MOVE_DOWN_AMOUNT: f32 = 15.0;
 const PLAYER_COLLISION_Y: f32 = PLAYER_Y + 20.0;
@@ -146,6 +147,14 @@ pub(crate) fn check_invader_wall_collision(
                 invader_config.direction *= -1.0;
                 invader_config.wall_collision_timer.reset();
                 invader_config.move_down = true;
+
+                let current_movement_timer = invader_config.movement_timer.duration().as_secs_f32();
+
+                invader_config
+                    .movement_timer
+                    .set_duration(Duration::from_secs_f32(
+                        current_movement_timer * MOVEMENT_TIMER_INCREASE_FACTOR,
+                    ));
                 return;
             }
         }

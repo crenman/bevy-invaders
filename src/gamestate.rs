@@ -3,8 +3,7 @@ use std::process::exit;
 use bevy::prelude::*;
 
 use crate::{
-    Invader, InvaderBulletHitPlayerEvent, InvadersReachedBottomEvent, Player,
-    PlayerKilledAllInvadersEvent,
+    Invader, InvaderBulletHitPlayerEvent, InvadersReachedBottomEvent, PlayerKilledAllInvadersEvent,
 };
 
 pub(crate) fn invaders_hit_player(
