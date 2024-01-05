@@ -3,6 +3,10 @@ Using my dev days to explore the Bevy Engine https://bevyengine.org/, https://be
 
 ![screenshot](screenshot.png "Screenshot")
 
+## How to run
+
+Install rust and run ``cargo run`` in the main directory
+
 
 ## Resources
 
